@@ -9,20 +9,21 @@ class Game {
         this.engine = Matter.Engine.create();
         this.world = this.engine.world;
         Matter.Engine.run(this.engine);
+        this.world.gravity.y = 0; 
 
-        this.bounds = Matter.Bodies.rectangle(0, 400, 600, 100, {isStatic: true});
+        this.bounds = Matter.Bodies.rectangle(300, 400, 800, 50, {isStatic: true});
         Matter.World.add(this.world, [this.bounds]);
 
         this.players = [new Player(100, 100, this.engine)];
     }
 
     setup() {
-        p5.createCanvas(640, 480);
-        p5.frameRate(30);
+        p5.createCanvas(p5.windowWidth - 50, p5.windowHeight - 50);
+        p5.frameRate(60);
     }
 
     draw() {
-        p5.background(50);
+        p5.background(10);
         this.players.forEach((p) => p.draw());
 
         drawObj(this.bounds);

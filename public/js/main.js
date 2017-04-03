@@ -5,8 +5,8 @@ const Game = require("./game");
 const game = new Game();
 
 const sketch = (p5) => {
-    p5.setup = game.setup;
-    p5.draw = game.draw;
+    p5.setup 		= game.setup;
+    p5.draw 		= game.draw;
     window.p5 = p5;
 };
 

@@ -8,6 +8,7 @@ var browserSync = require('browser-sync').create();
 gulp.task('connect', function () {
     connect.server({
         root: './public/',
+		port: 8081,
         livereload: true,
     });
 });
