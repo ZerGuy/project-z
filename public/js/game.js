@@ -54,7 +54,7 @@ class Game {
         const obstacles = this.obstacles;
 
         p5.stroke(100);
-
+        //
         for (const ob of this.obstacles) {
             let vert = ob.vertices;
 
