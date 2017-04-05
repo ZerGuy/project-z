@@ -10,10 +10,6 @@ const BODY_Y = 20;
 
 class Player {
     constructor(x, y, engine) {
-        this.x = x;
-        this.y = y;
-        this.angle = 0;
-
         this.draw = this.draw.bind(this);
         this.checkControls = this.checkControls.bind(this);
 
@@ -26,13 +22,16 @@ class Player {
         });
 
         Matter.World.add(engine.world, [this.person]);
+
+        this.x = this.person.position.x;
+        this.y = this.person.position.y;
+        this.angle = 0;
     }
 
     draw() {
         this.checkControls();
-        
-        
 
+        p5.stroke(0);
         drawObj(this.body);
         drawObj(this.head);
     }
@@ -49,7 +48,6 @@ class Player {
         force = Vec.mult(force, 0.03);
 
         let angle = Vec.angle(Vec.create(0, 0), force) - Math.PI / 2;
-        console.log(angle);
 
         if (force.x === 0 && force.y === 0)
             return;
