@@ -2,6 +2,7 @@ const Matter = require('matter-js');
 const Player = require('./player');
 const drawObj = require('./drawObj');
 const raycast = require('./raycast');
+const sal = require('./sight-and-light');
 
 const Engine = Matter.Engine;
 const Vector = Matter.Vector;
@@ -53,21 +54,70 @@ class Game {
         const playerPosition = this.players[0].person.position;
         const obstacles = this.obstacles;
 
+        const walls = [];
+        obstacles.forEach((a) => {
+            for (let i = 0; i < a.vertices.length - 1; i++) {
+                walls.push({
+                    ax: a.vertices[i].x,
+                    ay: a.vertices[i].y,
+                    bx: a.vertices[i + 1].x,
+                    by: a.vertices[i + 1].y,
+                });
+            }
+
+            walls.push({
+                ax: a.vertices[0].x,
+                ay: a.vertices[0].y,
+                bx: a.vertices[a.vertices.length - 1].x,
+                by: a.vertices[a.vertices.length - 1].y,
+            });
+        });
+
+        let res = sal.compute(playerPosition, walls);
+
+        p5.stroke(0, 150, 20);
+        p5.strokeWeight(5);
+        p5.noFill();
+        p5.beginShape();
+        res.forEach((a) => {
+            p5.vertex(a.x, a.y);
+        });
+        p5.endShape(p5.CLOSE);
+
         p5.stroke(100);
-        //
-        for (const ob of this.obstacles) {
+        p5.strokeWeight(1);
+
+        p5.fill(255);
+        for (const ob of obstacles) {
             let vert = ob.vertices;
 
-            for (let i = 0; i < vert.length; i++) {
-                p5.beginShape(p5.LINES);
-                p5.vertex(playerPosition.x, playerPosition.y);
-                p5.vertex(vert[i].x, vert[i].y);
-                p5.endShape();
+            for (let i = 0; i < vert.length - 1; i++) {
+                // p5.beginShape(p5.LINES);
+                // p5.vertex(playerPosition.x, playerPosition.y);
+                // p5.vertex(vert[i].x, vert[i].y);
+                // p5.endShape();
 
                 let ray = {
-                    x: vert[i].x - playerPosition.x,
-                    y: vert[i].y - playerPosition.y
+                    a: {
+                        x: playerPosition.x,
+                        y: playerPosition.y,
+                    },
+                    b: {
+                        x: vert[i].x,
+                        y: vert[i].y
+                    }
                 };
+
+                let seg = {
+                    ax: vert[i].x,
+                    ay: vert[i].y,
+                    bx: vert[i + 1].x,
+                    by: vert[i + 1].y,
+                };
+
+                let inter = sal.getIntersection(ray, seg);
+                p5.ellipse(inter.x, inter.y, 5, 5);
+                continue;
 
                 let endPoint;
                 let raycasted = raycast(obstacles, playerPosition, ray, VISIBILITY_DISTANCE);
@@ -82,9 +132,10 @@ class Game {
                 }
 
                 p5.ellipse(endPoint.x, endPoint.y, 5, 5);
+                console.log(ob);
 
             }
-
+            //p5.noLoop();
         }
     }
 }
