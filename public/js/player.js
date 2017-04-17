@@ -1,5 +1,6 @@
 const Matter  = require('matter-js');
 const drawObj = require('./drawObj');
+const keyCodes = require('./keyCodes');
 
 const Body = Matter.Body;
 const Vec  = Matter.Vector;
@@ -32,6 +33,8 @@ class Player {
         this.checkControls();
 
         p5.stroke(0);
+        p5.fill(255);
+        p5.strokeWeight(1);
         drawObj(this.body);
         drawObj(this.head);
     }
@@ -39,10 +42,10 @@ class Player {
     checkControls() {
         let force = Vec.create(0, 0);
 
-        force = addForce(force, p5.UP_ARROW,    0,     -0.03);
-        force = addForce(force, p5.DOWN_ARROW,  0,     0.03 );
-        force = addForce(force, p5.RIGHT_ARROW, 0.03,  0    );
-        force = addForce(force, p5.LEFT_ARROW,  -0.03, 0    );
+        force = addForce(force, keyCodes.w, 0,     -0.03);
+        force = addForce(force, keyCodes.s, 0,     0.03 );
+        force = addForce(force, keyCodes.d, 0.03,  0    );
+        force = addForce(force, keyCodes.a, -0.03, 0    );
 
         force = Vec.normalise(force);
         force = Vec.mult(force, 0.03);
