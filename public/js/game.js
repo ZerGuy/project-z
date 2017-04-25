@@ -50,11 +50,16 @@ class Game {
     }
 
     draw() {
-        p5.background(10);
+        p5.background(100);
 
         p5.stroke(0);
-        this.obstacles.forEach((ob) => drawObj(ob));
+        p5.ellipse(400, 600, 100, 100);
         this.drawVisibilityArea();
+
+        p5.stroke(0);
+        p5.fill(255);
+        p5.strokeWeight(1);
+        this.obstacles.forEach((ob) => drawObj(ob));
         this.players.forEach((p) => p.draw());
     }
 
@@ -113,12 +118,18 @@ class Game {
         let res = sal.compute(playerPosition, walls);
 
         p5.stroke(0, 150, 20);
-        p5.strokeWeight(5);
-        p5.fill(100);
+        p5.strokeWeight(1);
+        p5.fill(10);
         p5.beginShape();
+        p5.vertex(0, 0);
+        p5.vertex(0, this.bounds.maxY);
+        p5.vertex(this.bounds.maxX, this.bounds.maxY);
+        p5.vertex(this.bounds.maxX, 0);
+        p5.beginContour();
         res.forEach((a) => {
             p5.vertex(a.x, a.y);
         });
+        p5.endContour();
         p5.endShape(p5.CLOSE);
     }
 }
