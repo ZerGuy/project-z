@@ -11,11 +11,22 @@ class Game {
     constructor() {
         this.draw = this.draw.bind(this);
         this.setup = this.setup.bind(this);
+    }
+
+    setup() {
+        p5.createCanvas(p5.windowWidth - 50, p5.windowHeight - 50);
+        p5.frameRate(60);
+        this.bounds = {
+            minX: 0,
+            minY: 0,
+            maxX: p5.windowWidth - 50,
+            maxY: p5.windowHeight - 50
+        }
 
         this.createWorld();
         this.createObstacles();
-
-        this.players = [new Player(250, 200, this.engine)];
+        this.createBoundaries();
+        this.loadPlayers();
     }
 
     createWorld() {
@@ -29,8 +40,6 @@ class Game {
     createObstacles() {
         this.obstacles = [];
 
-        // 
-
         this.obstacles.push(Matter.Bodies.rectangle(500, 100, 50, 100, {isStatic: true}));
         this.obstacles.push(Matter.Bodies.rectangle(100, 100, 50, 100, {isStatic: true}));
         this.obstacles.push(Matter.Bodies.rectangle(450, 400, 800, 50, {isStatic: true}));
@@ -38,15 +47,23 @@ class Game {
         Matter.World.add(this.world, this.obstacles);
     }
 
-    setup() {
-        p5.createCanvas(p5.windowWidth - 50, p5.windowHeight - 50);
-        p5.frameRate(60);
-        this.bounds = {
-            minX: 0,
-            minY: 0,
-            maxX: p5.windowWidth - 50,
-            maxY: p5.windowHeight - 50
-        }
+    createBoundaries() {
+        this.boundaries = [];
+        const ax = this.bounds.minX;
+        const ay = this.bounds.minY;
+        const bx = this.bounds.maxX;
+        const by = this.bounds.maxY;
+        
+        this.boundaries.push(Matter.Bodies.rectangle(ax, by / 2, 10, by + 5, {isStatic: true}));      
+        this.boundaries.push(Matter.Bodies.rectangle(bx, by / 2, 10, by + 5, {isStatic: true}));      
+        this.boundaries.push(Matter.Bodies.rectangle(bx / 2, ay, bx + 5, 10, {isStatic: true}));      
+        this.boundaries.push(Matter.Bodies.rectangle(bx / 2, by, bx + 5, 10, {isStatic: true}));      
+        
+        Matter.World.add(this.world, this.boundaries);
+    }
+
+    loadPlayers() {
+        this.players = [new Player(250, 200, this.engine)];
     }
 
     draw() {
@@ -59,6 +76,7 @@ class Game {
         p5.stroke(0);
         p5.fill(255);
         p5.strokeWeight(1);
+        this.boundaries.forEach((b) => drawObj(b));
         this.obstacles.forEach((ob) => drawObj(ob));
         this.players.forEach((p) => p.draw());
     }
