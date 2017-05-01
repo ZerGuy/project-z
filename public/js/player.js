@@ -1,6 +1,7 @@
 const Matter  = require('matter-js');
 const drawObj = require('./drawObj');
 const keyCodes = require('./keyCodes');
+const ioMsg = require('./io-messages');
 
 const Body = Matter.Body;
 const Vec  = Matter.Vector;
@@ -10,7 +11,7 @@ const BODY_X = 60;
 const BODY_Y = 20;
 
 class Player {
-    constructor(x, y, engine) {
+    constructor(x, y, engine, id) {
         this.draw = this.draw.bind(this);
         this.checkControls = this.checkControls.bind(this);
 
@@ -27,16 +28,13 @@ class Player {
         this.x = this.person.position.x;
         this.y = this.person.position.y;
         this.angle = 0;
+        this.id = id;
     }
 
-    draw() {
+    updateAndDraw() {
         this.checkControls();
-
-        p5.stroke(0);
-        p5.fill(255);
-        p5.strokeWeight(1);
-        drawObj(this.body);
-        drawObj(this.head);
+        this.notifyServer();
+        this.draw();
     }
 
     checkControls() {
@@ -57,6 +55,24 @@ class Player {
 
         Body.applyForce(this.person, this.person.position, force);
         Body.setAngle(this.person, angle);
+    }
+
+    notifyServer() {
+        console.log(this.person.position);
+        this.socket.emit(ioMsg.playerPosition, this.person.position);
+    }
+
+    draw() {
+        p5.stroke(0);
+        p5.fill(255);
+        p5.strokeWeight(1);
+        drawObj(this.body);
+        drawObj(this.head);
+    }
+
+    setPosition(x, y) {
+        this.person.position.x = x;
+        this.person.position.y = y;
     }
 }
 

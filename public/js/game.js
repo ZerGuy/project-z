@@ -3,12 +3,19 @@ const Player = require('./player');
 const drawObj = require('./drawObj');
 const sal = require('./sight-and-light');
 const io = require('socket.io-client');
+const ioMsg = require('./io-messages');
 
 const socket = io();
 
 const Engine = Matter.Engine;
 const Vector = Matter.Vector;
 const VISIBILITY_DISTANCE = 300;
+
+let player;
+let enemies = [];
+let obstacles = [];
+let world;
+let engine;
 
 class Game {
     constructor() {
@@ -33,22 +40,21 @@ class Game {
     }
 
     createWorld() {
-        this.engine = Engine.create();
-        Engine.run(this.engine);
+        engine = Engine.create();
+        Engine.run(engine);
 
-        this.world = this.engine.world;
-        this.world.gravity.y = 0;
+        world = engine.world;
+        world.gravity.y = 0;
     }
 
     loadObstacles() {
-        this.obstacles = [];
-
-        socket.on('obstacles', function(data) {
+        socket.on(ioMsg.obstacles, function(data) {
             data.forEach((ob) => {
-                this.obstacles.push(Matter.Bodies.rectangle(ob.x, ob.y, ob.width, ob.height, {isStatic: true}));
+                obstacles.push(Matter.Bodies.rectangle(ob.x, ob.y, ob.width, ob.height, {isStatic: true}));
             });
-            Matter.World.add(this.world, this.obstacles);
-        }.bind(this));
+            Matter.World.add(world, obstacles);
+
+        });
     }
 
     createBoundaries() {
@@ -63,11 +69,39 @@ class Game {
         this.boundaries.push(Matter.Bodies.rectangle(bx / 2, ay, bx + 5, 10, {isStatic: true}));      
         this.boundaries.push(Matter.Bodies.rectangle(bx / 2, by, bx + 5, 10, {isStatic: true}));      
         
-        Matter.World.add(this.world, this.boundaries);
+        Matter.World.add(world, this.boundaries);
     }
 
     loadPlayers() {
-        this.players = [new Player(250, 200, this.engine)];
+        socket.on(ioMsg.spawn, function(data) {
+            console.log('spawn', data);
+            player = new Player(data.x, data.y, engine, socket.io.engine.id);
+            player.socket = socket;
+            console.log(player);
+        });
+
+        socket.on(ioMsg.players, function(data) {
+            data.forEach((p) => {
+                if (p.id === player.id) {
+                    player.x = p.x;
+                    player.y = p.y;
+                    return;
+                }
+
+                for (var i = 0; i < enemies.length; i++) {
+                    if (enemies[i].id !== p.id)
+                        continue;
+
+                    enemies[i].setPosition(p.x, p.y);
+                    return;
+                }
+
+                enemies.push(new Player(p.x, p.y, engine, p.id));
+
+            });
+            console.log(enemies[0]);
+            console.log(data);
+        });
     }
 
     draw() {
@@ -75,20 +109,25 @@ class Game {
 
         p5.stroke(0);
         p5.ellipse(400, 600, 100, 100);
-        this.drawVisibilityArea();
+        this.fillInvisibleArea();
 
         p5.stroke(0);
         p5.fill(255);
         p5.strokeWeight(1);
         this.boundaries.forEach((b) => drawObj(b));
-        this.obstacles.forEach((ob) => drawObj(ob));
-        this.players.forEach((p) => p.draw());
+        obstacles.forEach((ob) => drawObj(ob));
+        
+        if (player) 
+            player.updateAndDraw();
+        
+        enemies.forEach((p) => p.draw());
     }
 
-    drawVisibilityArea() {
-        const playerPosition = this.players[0].person.position;
-        const obstacles = this.obstacles;
+    fillInvisibleArea() {
+        if (!player)
+            return;
 
+        const playerPosition = player.person.position;
         const walls = [];
 
         walls.push({
