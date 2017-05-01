@@ -2,6 +2,9 @@ const Matter = require('matter-js');
 const Player = require('./player');
 const drawObj = require('./drawObj');
 const sal = require('./sight-and-light');
+const io = require('socket.io-client');
+
+const socket = io();
 
 const Engine = Matter.Engine;
 const Vector = Matter.Vector;
@@ -24,7 +27,7 @@ class Game {
         }
 
         this.createWorld();
-        this.createObstacles();
+        this.loadObstacles();
         this.createBoundaries();
         this.loadPlayers();
     }
@@ -37,14 +40,15 @@ class Game {
         this.world.gravity.y = 0;
     }
 
-    createObstacles() {
+    loadObstacles() {
         this.obstacles = [];
 
-        this.obstacles.push(Matter.Bodies.rectangle(500, 100, 50, 100, {isStatic: true}));
-        this.obstacles.push(Matter.Bodies.rectangle(100, 100, 50, 100, {isStatic: true}));
-        this.obstacles.push(Matter.Bodies.rectangle(450, 400, 800, 50, {isStatic: true}));
-
-        Matter.World.add(this.world, this.obstacles);
+        socket.on('obstacles', function(data) {
+            data.forEach((ob) => {
+                this.obstacles.push(Matter.Bodies.rectangle(ob.x, ob.y, ob.width, ob.height, {isStatic: true}));
+            });
+            Matter.World.add(this.world, this.obstacles);
+        }.bind(this));
     }
 
     createBoundaries() {

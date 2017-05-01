@@ -1,9 +1,5 @@
 #!/usr/bin/env node
 
-/**
- * Module dependencies.
- */
-
 var app = require('../app');
 var debug = require('debug')('project-z:server');
 var http = require('http');
@@ -15,10 +11,6 @@ var http = require('http');
 var port = normalizePort(process.env.PORT || '3000');
 app.set('port', port);
 
-/**
- * Create HTTP server.
- */
-
 var server = http.createServer(app);
 
 /**
@@ -28,6 +20,12 @@ var server = http.createServer(app);
 server.listen(port);
 server.on('error', onError);
 server.on('listening', onListening);
+
+var io = require('socket.io')(server);
+
+var Engine = require('./engine');
+var engine = new Engine(io);
+
 
 /**
  * Normalize a port into a number, string, or false.

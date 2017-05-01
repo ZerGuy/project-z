@@ -25,7 +25,7 @@ gulp.task('serve', function () {
 });
 
 gulp.task('watch', function () {
-    gulp.watch(['./public/js/*.js'], ['webpack']);
+    gulp.watch(['./public/js/*.js', './bin/*.js'], ['webpack', 'serve']);
 });
 
 
