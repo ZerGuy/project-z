@@ -31,10 +31,9 @@ class Player {
         this.id = id;
     }
 
-    updateAndDraw() {
+    update() {
         this.checkControls();
         this.notifyServer();
-        this.draw();
     }
 
     checkControls() {
@@ -58,7 +57,6 @@ class Player {
     }
 
     notifyServer() {
-        console.log(this.person.position);
         this.socket.emit(ioMsg.playerPosition, this.person.position);
     }
 

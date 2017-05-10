@@ -1,40 +1,27 @@
-const ioMsg = require('../public/js/io-messages');
 const _ = require('lodash');
+const ioMsg = require('../public/js/io-messages');
+const World = require('./world');
+
+const TICK_RATE = 60;
 
 var io;
 var players = [];
-var obstacles = [];
+var world = {};
+
 
 class Engine {
 	constructor(_io) {
 		io = _io;
-
 		this.onConnect = this.onConnect.bind(this);
 
 		this.init();
 	}
 
 	init() {
-		this.generateObstacles();
+		world = new World();
 
 		io.on('connection', this.onConnect);
-
-		setInterval(this.sendPlayersPositions, 500);
-	}
-
-	generateObstacles() {
-        obstacles.push(this.createObstacle(500, 100, 50, 100));
-        obstacles.push(this.createObstacle(100, 100, 50, 100));
-        obstacles.push(this.createObstacle(450, 400, 800, 50));
-	}
-
-	createObstacle(x, y, width, height) {
-		return {
-			x: x,
-			y: y,
-			width: width,
-			height: height
-		}
+		setInterval(this.sendPlayersPositions, 1000 / TICK_RATE);
 	}
 
 	onConnect(socket) {
@@ -43,10 +30,11 @@ class Engine {
 		console.log('Player connected', socket.id);
   		console.log('Playes total: ', players.length);
 
-  		socket.emit(ioMsg.obstacles, obstacles);
+  		socket.emit(ioMsg.obstacles,  world.obstacles);
+  		socket.emit(ioMsg.boundaries, world.boundaries);
 
   		socket.on(ioMsg.playerPosition, function(data) {
-  			for (var i = players.length - 1; i >= 0; i--) {
+  			for (var i = 0; i < players.length; i++) {
   				if (players[i].id !== socket.id)
   					continue;
 
@@ -84,20 +72,6 @@ class Engine {
   		});
 
   		socket.emit(ioMsg.spawn, {x: pos.x, y: pos.y});
-	}
-
-	onDisconnect(socket) {
-		console.log('Player disconnected', some);
-  			console.log('Player disconnected', socket.id);
-
-  			for (var i = 0; i < players.length; i++){
-  				if (players[i].id === socket.id) {
-  					players.splice(i, 1);
-  					break;
-  				}
-  			}
-
-  			console.log('Playes total: ', players.length);
 	}
 
 	sendPlayersPositions() {
