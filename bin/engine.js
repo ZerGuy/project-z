@@ -30,6 +30,7 @@ class Engine {
 		console.log('Player connected', socket.id);
   		console.log('Playes total: ', players.length);
 
+  		socket.broadcast.emit(ioMsg.playerConnected, socket.id);
   		socket.emit(ioMsg.obstacles,  world.obstacles);
   		socket.emit(ioMsg.boundaries, world.boundaries);
 
@@ -38,30 +39,28 @@ class Engine {
   				if (players[i].id !== socket.id)
   					continue;
 
-  				players[i].x = data.x;
-  				players[i].y = data.y;
+  				players[i].x 	 = data.x;
+  				players[i].y 	 = data.y;
+  				players[i].angle = data.angle;
   				return;
   			}
   		});
 
   		socket.on('disconnect', function() {
-  			console.log('Player disconnected', socket.id);
-
   			for (var i = 0; i < players.length; i++){
   				if (players[i].id === socket.id) {
   					players.splice(i, 1);
   					break;
   				}
   			}
-
-  			console.log('Playes total: ', players.length);
+  			io.emit(ioMsg.playerDisconnected, socket.id);
   		});
 	}
 
 	addPlayer(socket) {
 		const pos = {
 			x: 200 + players.length * 100,
-			y: 200 + players.length * 100,
+			y: 250,
 		};
 
 		players.push({
@@ -78,13 +77,13 @@ class Engine {
 		function createPositionsArray(players) {
 			return _.map(players, function(p) { 
 				return {
-					id: p.id,
-					x : p.x, 
-					y : p.y
+					id		: p.id,
+					x 		: p.x, 
+					y 		: p.y,
+					angle	: p.angle,
 				} 
 			});
 		}
-
 		const positions = createPositionsArray(players);
 		io.emit(ioMsg.players, positions)
 	}

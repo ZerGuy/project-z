@@ -9,8 +9,8 @@ const bounds = {
 
 class Renderer {
 	constructor() {
-        bounds.bx = p5.windowWidth  - 50;
-        bounds.by = p5.windowHeight - 50;
+        bounds.bx = p5.windowWidth;
+        bounds.by = p5.windowHeight;
 
         addWindowBordersToWalls();
 	}
@@ -97,6 +97,20 @@ class Renderer {
 		        });
 	        p5.endContour();
         p5.endShape(p5.CLOSE);
+    }
+
+    resize(width, height) {
+    	bounds.bx = width;
+        bounds.by = height;
+
+        walls[0].bx = bounds.bx;
+        walls[1].ax = bounds.bx;
+        walls[1].bx = bounds.bx;
+        walls[1].by = bounds.by;
+        walls[2].ay = bounds.by;
+        walls[2].bx = bounds.bx;
+        walls[2].by = bounds.by;
+        walls[3].by = bounds.by;
     }
 }
 

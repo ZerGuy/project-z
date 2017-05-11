@@ -18,16 +18,15 @@ class Player {
         this.body = Matter.Bodies.rectangle(x, y, BODY_X, BODY_Y);
         this.head = Matter.Bodies.circle(x, y, HEAD_RADIUS);
 
-        this.person = Matter.Body.create({
+        this.person = Body.create({
             parts: [this.body, this.head],
-            frictionAir: 0.9
+            frictionAir: 0.9,
+            angle: 0,
         });
 
         Matter.World.add(engine.world, [this.person]);
 
-        this.x = this.person.position.x;
-        this.y = this.person.position.y;
-        this.angle = 0;
+        this.position = this.person.position;
         this.id = id;
     }
 
@@ -57,7 +56,13 @@ class Player {
     }
 
     notifyServer() {
-        this.socket.emit(ioMsg.playerPosition, this.person.position);
+        const msg = {
+            x: this.person.position.x,
+            y: this.person.position.y,
+            angle: this.person.angle,
+        };
+
+        this.socket.emit(ioMsg.playerPosition, msg);
     }
 
     draw() {
@@ -66,11 +71,6 @@ class Player {
         p5.strokeWeight(1);
         drawObj(this.body);
         drawObj(this.head);
-    }
-
-    setPosition(x, y) {
-        this.person.position.x = x;
-        this.person.position.y = y;
     }
 }
 

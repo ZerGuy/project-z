@@ -26,15 +26,15 @@ class Game {
     }
 
     setup() {
-        p5.createCanvas(p5.windowWidth - 50, p5.windowHeight - 50);
+        p5.createCanvas(p5.windowWidth, p5.windowHeight);
         p5.frameRate(60);
+
+        window.addEventListener('resize', resizeCanvas);
 
         renderer = new Renderer();
 
         this.createWorld();
-        this.loadObstacles();
-        this.loadBoundaries();
-        this.loadPlayers();
+        this.initSocketListeners();
     }
 
     createWorld() {
@@ -45,54 +45,74 @@ class Game {
         world.gravity.y = 0;
     }
 
-    loadObstacles() {
-        socket.on(ioMsg.obstacles, function(data) {
-            data.forEach((ob) => {
-                obstacles.push(Matter.Bodies.rectangle(ob.x, ob.y, ob.width, ob.height, {isStatic: true}));
-            });
-            Matter.World.add(world, obstacles);
-            renderer.initWalls(obstacles);
-        });
+    initSocketListeners() {
+        socket.on(ioMsg.obstacles,  this.loadObstacles);
+        socket.on(ioMsg.boundaries, this.loadBoundaries);
+
+        socket.on(ioMsg.spawn,   this.spawnPlayer);
+        socket.on(ioMsg.players, this.updatePlayersPositions);
+
+        socket.on(ioMsg.playerConnected,    this.addEnemy);
+        socket.on(ioMsg.playerDisconnected, this.removeEnemy);
     }
 
-    loadBoundaries() {
-        socket.on(ioMsg.boundaries, function(data) {
-            data.forEach((ob) => {
-                boundaries.push(Matter.Bodies.rectangle(ob.x, ob.y, ob.width, ob.height, {isStatic: true}));
-            });
-            Matter.World.add(world, boundaries);
+    loadObstacles(data) {
+        data.forEach((ob) => {
+            obstacles.push(Matter.Bodies.rectangle(ob.x, ob.y, ob.width, ob.height, {isStatic: true}));
         });
+        Matter.World.add(world, obstacles);
+        renderer.initWalls(obstacles);
     }
 
-    loadPlayers() {
-        socket.on(ioMsg.spawn, function(data) {
-            console.log('spawn', data);
-            player = new Player(data.x, data.y, engine, socket.io.engine.id);
-            player.socket = socket;
-            console.log(player);
+    loadBoundaries(data) {
+        data.forEach((ob) => {
+            boundaries.push(Matter.Bodies.rectangle(ob.x, ob.y, ob.width, ob.height, {isStatic: true}));
         });
+        Matter.World.add(world, boundaries);
+    }
 
-        socket.on(ioMsg.players, function(data) {
-            data.forEach((p) => {
-                if (p.id === player.id) {
-                    player.x = p.x;
-                    player.y = p.y;
+    spawnPlayer(data) {
+        player = new Player(data.x, data.y, engine, socket.io.engine.id);
+        player.socket = socket;
+    }
+
+    updatePlayersPositions(data) {
+        data.forEach((p) => {
+            if (p.id === player.id) {
+                //todo hz chto
+                return;
+            }
+
+            for (var i = 0; i < enemies.length; i++) {
+                if (enemies[i].id !== p.id)
+                    continue;
+                
+                if (p.angle === undefined)
                     return;
-                }
 
-                for (var i = 0; i < enemies.length; i++) {
-                    if (enemies[i].id !== p.id)
-                        continue;
+                Matter.Body.setPosition(enemies[i].person, {x:p.x, y:p.y});
+                Matter.Body.setAngle(enemies[i].person, p.angle);
+                return;
+            }
 
-                    Matter.Body.setPosition(enemies[i].person, {x:p.x, y:p.y});
-                    return;
-                }
-
-                enemies.push(new Player(p.x, p.y, engine, p.id));
-            });
+            enemies.push(new Player(p.x, p.y, engine, p.id));
         });
     }
 
+    addEnemy(id) {
+        console.log('player connected:', id);
+        enemies.push(new Player(-100, -100, engine, id));
+    }
+
+    removeEnemy(id) {
+        console.log('player disconnected:', id);
+        for (var i = 0; i < enemies.length; i++){
+            if (enemies[i].id === id) 
+                return enemies.splice(i, 1);
+        }
+    }
+
+    
     draw() {
         if (player) 
             player.update();
@@ -104,6 +124,11 @@ class Game {
             boundaries,
         });
     }
+}
+
+function resizeCanvas() {
+    p5.resizeCanvas(p5.windowWidth, p5.windowHeight);
+    renderer.resize(p5.windowWidth, p5.windowHeight);
 }
 
 module.exports = Game;
