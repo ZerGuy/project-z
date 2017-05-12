@@ -33,6 +33,7 @@ class Engine {
   		socket.broadcast.emit(ioMsg.playerConnected, socket.id);
   		socket.emit(ioMsg.obstacles,  world.obstacles);
   		socket.emit(ioMsg.boundaries, world.boundaries);
+  		socket.emit(ioMsg.worldSize,  world.size);
 
   		socket.on(ioMsg.playerPosition, function(data) {
   			for (var i = 0; i < players.length; i++) {

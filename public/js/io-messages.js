@@ -1,10 +1,12 @@
 module.exports = {
-	obstacles       	: 'obstacles',
-	boundaries      	: 'boundaries',
-	players         	: 'players positions',
-	spawn           	: 'spawn',
 	id					: 'id',
+	players         	: 'players positions',
 	playerPosition		: 'player position',
 	playerConnected 	: 'player connected',
 	playerDisconnected	: 'player disconnected',
+	spawn           	: 'spawn',
+
+	worldSize			: 'world size',
+	obstacles       	: 'obstacles',
+	boundaries      	: 'boundaries',
 };

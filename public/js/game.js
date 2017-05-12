@@ -8,8 +8,6 @@ const ioMsg = require('./io-messages');
 const socket = io();
 
 const Engine = Matter.Engine;
-const Vector = Matter.Vector;
-const VISIBILITY_DISTANCE = 300;
 
 let player;
 let enemies = [];
@@ -21,7 +19,7 @@ let renderer;
 
 class Game {
     constructor() {
-        this.draw  = this.draw.bind(this);
+        this.draw = this.draw.bind(this);
         this.setup = this.setup.bind(this);
     }
 
@@ -43,31 +41,37 @@ class Game {
 
         world = engine.world;
         world.gravity.y = 0;
+        world.bounds.min.x = 0;
+        world.bounds.min.y = 0;
     }
 
     initSocketListeners() {
-        socket.on(ioMsg.obstacles,  this.loadObstacles);
+        socket.on(ioMsg.worldSize, this.setWorldSize);
+        socket.on(ioMsg.obstacles, this.loadObstacles);
         socket.on(ioMsg.boundaries, this.loadBoundaries);
 
-        socket.on(ioMsg.spawn,   this.spawnPlayer);
+        socket.on(ioMsg.spawn, this.spawnPlayer);
         socket.on(ioMsg.players, this.updatePlayersPositions);
 
-        socket.on(ioMsg.playerConnected,    this.addEnemy);
+        socket.on(ioMsg.playerConnected, this.addEnemy);
         socket.on(ioMsg.playerDisconnected, this.removeEnemy);
     }
 
+    setWorldSize(data) {
+        world.bounds.max.x = data.x;
+        world.bounds.max.y = data.y;
+        console.log(world);
+        //renderer.resize(data.x, data.y);
+    }
+
     loadObstacles(data) {
-        data.forEach((ob) => {
-            obstacles.push(Matter.Bodies.rectangle(ob.x, ob.y, ob.width, ob.height, {isStatic: true}));
-        });
+        data.forEach(ob => obstacles.push(Matter.Bodies.rectangle(ob.x, ob.y, ob.width, ob.height, {isStatic: true})));
         Matter.World.add(world, obstacles);
         renderer.initWalls(obstacles);
     }
 
     loadBoundaries(data) {
-        data.forEach((ob) => {
-            boundaries.push(Matter.Bodies.rectangle(ob.x, ob.y, ob.width, ob.height, {isStatic: true}));
-        });
+        data.forEach(ob => boundaries.push(Matter.Bodies.rectangle(ob.x, ob.y, ob.width, ob.height, {isStatic: true})));
         Matter.World.add(world, boundaries);
     }
 
@@ -86,11 +90,11 @@ class Game {
             for (var i = 0; i < enemies.length; i++) {
                 if (enemies[i].id !== p.id)
                     continue;
-                
+
                 if (p.angle === undefined)
                     return;
 
-                Matter.Body.setPosition(enemies[i].person, {x:p.x, y:p.y});
+                Matter.Body.setPosition(enemies[i].person, {x: p.x, y: p.y});
                 Matter.Body.setAngle(enemies[i].person, p.angle);
                 return;
             }
@@ -106,15 +110,15 @@ class Game {
 
     removeEnemy(id) {
         console.log('player disconnected:', id);
-        for (var i = 0; i < enemies.length; i++){
-            if (enemies[i].id === id) 
+        for (var i = 0; i < enemies.length; i++) {
+            if (enemies[i].id === id)
                 return enemies.splice(i, 1);
         }
     }
 
-    
+
     draw() {
-        if (player) 
+        if (player)
             player.update();
 
         renderer.draw({
@@ -122,6 +126,7 @@ class Game {
             enemies,
             obstacles,
             boundaries,
+            worldSize: world.bounds.max,
         });
     }
 }

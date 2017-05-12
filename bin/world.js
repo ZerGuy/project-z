@@ -2,12 +2,13 @@ const obstacles  = [];
 const boundaries = [];
 
 const SIZE = {
-	x: 1500,
-	y: 1000
-}
+	x: 2000,
+	y: 1500
+};
 
 class World {
 	constructor() {
+		this.size 		= SIZE;
 		this.obstacles  = obstacles;
 		this.boundaries = boundaries;
 
@@ -21,16 +22,16 @@ class World {
         const bx = SIZE.x;
         const by = SIZE.y;
         
-        boundaries.push(this.createObstacle(ax, by / 2, 10, by + 5));      
-        boundaries.push(this.createObstacle(bx, by / 2, 10, by + 5));      
-        boundaries.push(this.createObstacle(bx / 2, ay, bx + 5, 10));      
-        boundaries.push(this.createObstacle(bx / 2, by, bx + 5, 10));      
+        boundaries.push(this.createObstacle(ax, by / 2, 10, by + 5));
+        boundaries.push(this.createObstacle(bx, by / 2, 10, by + 5));
+        boundaries.push(this.createObstacle(bx / 2, ay, bx + 5, 10));
+        boundaries.push(this.createObstacle(bx / 2, by, bx + 5, 10));
     }
 
 	generateObstacles() {
         obstacles.push(this.createObstacle(500, 100, 50, 100));
         obstacles.push(this.createObstacle(100, 100, 50, 100));
-        obstacles.push(this.createObstacle(450, 400, 800, 50));
+        obstacles.push(this.createObstacle(450, 400, 700, 50));
 	}
 
 	createObstacle(x, y, width, height) {
