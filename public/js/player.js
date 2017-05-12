@@ -10,6 +10,8 @@ const HEAD_RADIUS = 15;
 const BODY_X = 60;
 const BODY_Y = 20;
 
+const SPEED = 0.05;
+
 class Player {
     constructor(x, y, engine, id) {
         this.draw = this.draw.bind(this);
@@ -38,13 +40,13 @@ class Player {
     checkControls() {
         let force = Vec.create(0, 0);
 
-        force = addForce(force, keyCodes.w, 0,     -0.03);
-        force = addForce(force, keyCodes.s, 0,     0.03 );
-        force = addForce(force, keyCodes.d, 0.03,  0    );
-        force = addForce(force, keyCodes.a, -0.03, 0    );
+        force = addForce(force, keyCodes.w, 0,     -SPEED);
+        force = addForce(force, keyCodes.s, 0,     SPEED );
+        force = addForce(force, keyCodes.d, SPEED,  0    );
+        force = addForce(force, keyCodes.a, -SPEED, 0    );
 
         force = Vec.normalise(force);
-        force = Vec.mult(force, 0.03);
+        force = Vec.mult(force, SPEED);
 
         let angle = Vec.angle(Vec.create(0, 0), force) - Math.PI / 2;
 

@@ -1,15 +1,23 @@
+const _ = require('lodash');
 const drawObj = require('./drawObj');
 const sal = require('./sight-and-light');
 
+const BACKGROUND_COLOR = 0;
+const NOT_SEEN_COLOR = 30;
+const FLOOR_COLOR = 120;
+
+const CAMERA_STIFFNESS = 4;
+const CAMERA_LERP = 0.5;
+
 const walls = [];
 const screenSize = {
-    ax: 0,
-    ay: 0,
+    x: 0,
+    y: 0,
 };
 
 const worldSize = {
-    ax: 0,
-    ay: 0,
+    x: 0,
+    y: 0,
 };
 
 let translateVector = {
@@ -19,54 +27,57 @@ let translateVector = {
 
 class Renderer {
     constructor() {
-        screenSize.bx = p5.windowWidth;
-        screenSize.by = p5.windowHeight;
+        screenSize.x = p5.windowWidth;
+        screenSize.y = p5.windowHeight;
 
-        addWindowBordersToWalls();
+        p5.mouseX = screenSize.x / 2;
+        p5.mouseY = screenSize.y / 2;
+
+        p5.noCursor();
     }
 
     draw(params) {
         this.drawBackground();
         this.translate(params.player);
 
-        this.drawFloor(params.worldSize);
+        this.drawFloor();
         this.drawEnemies(params.enemies);
         this.fillInvisibleArea(params.player);
         this.drawObstacles(params.obstacles);
         this.drawBoundaries(params.boundaries);
         this.drawPlayer(params.player);
-        //this.drawAim(params.player);
+        this.drawAim();
     }
 
     translate(player) {
         if (!player)
             return;
 
-        const offset = {
-            x: (screenSize.bx / 2 - p5.mouseX) / 3,
-            y: (screenSize.by / 2 - p5.mouseY) / 3
+        const cameraOffset = {
+            x: (screenSize.x / 2 - p5.mouseX) / CAMERA_STIFFNESS,
+            y: (screenSize.y / 2 - p5.mouseY) / CAMERA_STIFFNESS
         };
 
-        const t = {
-            x: p5.lerp(translateVector.x, screenSize.bx / 2 - player.person.position.x + offset.x, 0.2),
-            y: p5.lerp(translateVector.y, screenSize.by / 2 - player.person.position.y + offset.y, 0.2)
+        const newTranslateVector = {
+            x: p5.lerp(translateVector.x, screenSize.x / 2 - player.person.position.x + cameraOffset.x, CAMERA_LERP),
+            y: p5.lerp(translateVector.y, screenSize.y / 2 - player.person.position.y + cameraOffset.y, CAMERA_LERP)
         };
 
         translateVector = {
-            x: t.x,
-            y: t.y
+            x: newTranslateVector.x,
+            y: newTranslateVector.y
         };
 
-        p5.translate(t.x, t.y);
+        p5.translate(translateVector.x, translateVector.y);
     }
 
     drawBackground() {
-        p5.background(0);
+        p5.background(BACKGROUND_COLOR);
     }
 
-    drawFloor(size) {
-        p5.fill(100);
-        p5.rect(0, 0, size.x, size.y);
+    drawFloor() {
+        p5.fill(FLOOR_COLOR);
+        p5.rect(0, 0, worldSize.x, worldSize.y);
     }
 
     drawEnemies(enemies) {
@@ -92,13 +103,28 @@ class Renderer {
         boundaries.forEach(b => drawObj(b));
     }
 
-    drawAim(player) {
-        if (!player)
-            return;
+    drawAim() {
+        const x = p5.mouseX - translateVector.x;
+        const y = p5.mouseY - translateVector.y;
 
-        const from = player.person.position;
-        const to = {x: p5.mouseX, y: p5.mouseY};
-        p5.line(from.x, from.y, to.x, to.y);
+        p5.fill(250);
+        p5.stroke(0);
+        p5.strokeWeight(1);
+
+        p5.beginShape();
+        p5.vertex(x - 1, y - 5); // top left
+        p5.vertex(x + 1, y - 5);
+        p5.vertex(x + 1, y - 1);
+        p5.vertex(x + 5, y - 1); // right top
+        p5.vertex(x + 5, y + 1);
+        p5.vertex(x + 1, y + 1);
+        p5.vertex(x + 1, y + 5); // bottom right
+        p5.vertex(x - 1, y + 5);
+        p5.vertex(x - 1, y + 1);
+        p5.vertex(x - 5, y + 1); // left bottom
+        p5.vertex(x - 5, y - 1);
+        p5.vertex(x - 1, y - 1);
+        p5.endShape(p5.CLOSE);
     }
 
     initWalls(obstacles) {
@@ -128,15 +154,15 @@ class Renderer {
         const playerPosition = player.person.position;
         const res = sal.compute(playerPosition, walls);
 
-        p5.stroke(0, 150, 20);
+        p5.stroke(NOT_SEEN_COLOR + 50);
         p5.strokeWeight(1);
-        p5.fill(10);
+        p5.fill(NOT_SEEN_COLOR);
 
         p5.beginShape();
-        p5.vertex(screenSize.ax, screenSize.ay);
-        p5.vertex(screenSize.ax, screenSize.by);
-        p5.vertex(screenSize.bx, screenSize.by);
-        p5.vertex(screenSize.bx, screenSize.ay);
+        p5.vertex(0, 0);
+        p5.vertex(0, worldSize.y);
+        p5.vertex(worldSize.x, worldSize.y);
+        p5.vertex(worldSize.x, 0);
 
         p5.beginContour();
         res.forEach(a => p5.vertex(a.x, a.y));
@@ -145,25 +171,23 @@ class Renderer {
     }
 
     resize(width, height) {
-        screenSize.bx = width;
-        screenSize.by = height;
+        screenSize.x = width;
+        screenSize.y = height;
+    }
 
-        walls[0].bx = screenSize.bx;
-        walls[1].ax = screenSize.bx + translateVector.x;
-        walls[1].bx = screenSize.bx;
-        walls[1].by = screenSize.by;
-        walls[2].ay = screenSize.by;
-        walls[2].bx = screenSize.bx;
-        walls[2].by = screenSize.by;
-        walls[3].by = screenSize.by;
+    setWorldSize(size) {
+        worldSize.x = size.x;
+        worldSize.y = size.y;
+        addMapBoundsToWalls();
     }
 }
 
-function addWindowBordersToWalls() {
-    walls.push(createWall(screenSize.ax, screenSize.ay, screenSize.bx, screenSize.ay));
-    walls.push(createWall(screenSize.bx + translateVector.x, screenSize.ay, screenSize.bx, screenSize.by));
-    walls.push(createWall(screenSize.ax, screenSize.by, screenSize.bx, screenSize.by));
-    walls.push(createWall(screenSize.ax, screenSize.ay, screenSize.ax, screenSize.by));
+
+function addMapBoundsToWalls() {
+    walls.push(createWall(0, 0, worldSize.x, 0));
+    walls.push(createWall(worldSize.x, 0, worldSize.x, worldSize.y));
+    walls.push(createWall(0, worldSize.y, worldSize.x, worldSize.y));
+    walls.push(createWall(0, 0, 0, worldSize.y));
 }
 
 function createWall(ax, ay, bx, by) {

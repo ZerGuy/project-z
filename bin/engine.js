@@ -8,7 +8,6 @@ var io;
 var players = [];
 var world = {};
 
-
 class Engine {
 	constructor(_io) {
 		io = _io;

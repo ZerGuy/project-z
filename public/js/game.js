@@ -58,10 +58,7 @@ class Game {
     }
 
     setWorldSize(data) {
-        world.bounds.max.x = data.x;
-        world.bounds.max.y = data.y;
-        console.log(world);
-        //renderer.resize(data.x, data.y);
+        renderer.setWorldSize(data);
     }
 
     loadObstacles(data) {
@@ -126,7 +123,6 @@ class Game {
             enemies,
             obstacles,
             boundaries,
-            worldSize: world.bounds.max,
         });
     }
 }
