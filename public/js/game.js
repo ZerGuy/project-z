@@ -3,7 +3,7 @@ const Player = require('./player');
 const Renderer = require('./renderer');
 
 const io = require('socket.io-client');
-const ioMsg = require('./io-messages');
+const ioMsg = require('./constants/io-messages');
 
 const socket = io();
 

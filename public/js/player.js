@@ -1,16 +1,21 @@
-const Matter  = require('matter-js');
+const Matter = require('matter-js');
 const drawObj = require('./drawObj');
-const keyCodes = require('./keyCodes');
-const ioMsg = require('./io-messages');
+const keyCodes = require('./constants/keyCodes');
+const ioMsg = require('./constants/io-messages');
+const Knife = require('./knife');
 
 const Body = Matter.Body;
-const Vec  = Matter.Vector;
+const Vec = Matter.Vector;
 
 const HEAD_RADIUS = 15;
 const BODY_X = 60;
 const BODY_Y = 20;
 
 const SPEED = 0.05;
+
+let mouseWasPressed = false;
+let mEngine;
+let knife;
 
 class Player {
     constructor(x, y, engine, id) {
@@ -30,20 +35,22 @@ class Player {
 
         this.position = this.person.position;
         this.id = id;
+        mEngine = engine;
     }
 
     update() {
         this.checkControls();
+        this.checkMouse();
         this.notifyServer();
     }
 
     checkControls() {
         let force = Vec.create(0, 0);
 
-        force = addForce(force, keyCodes.w, 0,     -SPEED);
-        force = addForce(force, keyCodes.s, 0,     SPEED );
-        force = addForce(force, keyCodes.d, SPEED,  0    );
-        force = addForce(force, keyCodes.a, -SPEED, 0    );
+        force = addForce(force, keyCodes.w, 0, -SPEED);
+        force = addForce(force, keyCodes.s, 0, SPEED);
+        force = addForce(force, keyCodes.d, SPEED, 0);
+        force = addForce(force, keyCodes.a, -SPEED, 0);
 
         force = Vec.normalise(force);
         force = Vec.mult(force, SPEED);
@@ -55,6 +62,20 @@ class Player {
 
         Body.applyForce(this.person, this.person.position, force);
         Body.setAngle(this.person, angle);
+    }
+
+    checkMouse() {
+        if (!p5.mouseIsPressed){
+            mouseWasPressed = false;
+            return;
+        }
+
+        if (mouseWasPressed)
+            return;
+
+        console.log('do');
+        mouseWasPressed = true;
+        knife = new Knife(mEngine, this.position.x + 50, this.position.y + 50);
     }
 
     notifyServer() {
@@ -73,6 +94,8 @@ class Player {
         p5.strokeWeight(1);
         drawObj(this.body);
         drawObj(this.head);
+        if (knife)
+            knife.draw();
     }
 }
 
@@ -80,7 +103,7 @@ class Player {
 function addForce(force, key, x, y) {
     if (p5.keyIsDown(key))
         return Vec.add(force, Vec.create(x, y));
-    
+
     return force;
 }
 

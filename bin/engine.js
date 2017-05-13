@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const ioMsg = require('../public/js/io-messages');
+const ioMsg = require('../public/js/constants/io-messages');
 const World = require('./world');
 
 const TICK_RATE = 60;

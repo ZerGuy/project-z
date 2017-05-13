@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const drawObj = require('./drawObj');
-const sal = require('./sight-and-light');
+const sal = require('./hide-and-seek/sight-and-light');
 
 const BACKGROUND_COLOR = 0;
 const NOT_SEEN_COLOR = 30;
