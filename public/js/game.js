@@ -81,10 +81,11 @@ class Game {
         data.forEach((p) => {
             if (p.id === player.id) {
                 //todo hz chto
+                //poka ne vazhno - norm
                 return;
             }
 
-            for (var i = 0; i < enemies.length; i++) {
+            for (let i = 0; i < enemies.length; i++) {
                 if (enemies[i].id !== p.id)
                     continue;
 
