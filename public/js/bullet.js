@@ -1,13 +1,11 @@
 const Matter = require('matter-js');
 const drawObj = require('./drawObj');
 
-class Knife {
-    constructor(engine, x, y, dx, dy) {
+class Bullet {
+    constructor(x, y, dx, dy) {
         this.body = Matter.Bodies.rectangle(x, y, 10, 20);
         this.dx = dx;
         this.dy = dy;
-
-        Matter.World.add(engine.world, [this.body]);
     }
 
     update() {
@@ -22,4 +20,4 @@ class Knife {
     }
 }
 
-module.exports = Knife;
+module.exports = Bullet;

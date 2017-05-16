@@ -41,6 +41,7 @@ class Renderer {
         this.translate(params.player);
 
         this.drawFloor();
+        this.drawBullets(params.bullets);
         this.drawEnemies(params.enemies);
         this.fillInvisibleArea(params.player);
         this.drawObstacles(params.obstacles);
@@ -80,8 +81,12 @@ class Renderer {
         p5.rect(0, 0, worldSize.x, worldSize.y);
     }
 
+    drawBullets(bullets) {
+        bullets.forEach(b => b.draw());
+    }
+
     drawEnemies(enemies) {
-        enemies.forEach(p => p.draw());
+        enemies.forEach(e => e.draw());
     }
 
     drawPlayer(player) {

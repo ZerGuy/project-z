@@ -2,7 +2,7 @@ const Matter = require('matter-js');
 const drawObj = require('./drawObj');
 const keyCodes = require('./constants/keyCodes');
 const ioMsg = require('./constants/io-messages');
-const Knife = require('./knife');
+const Bullet = require('./bullet');
 
 const Body = Matter.Body;
 const Vec = Matter.Vector;
@@ -73,9 +73,9 @@ class Player {
         if (mouseWasPressed)
             return;
 
-        console.log('do');
         mouseWasPressed = true;
-        knife = new Knife(mEngine, this.position.x + 50, this.position.y + 50);
+
+        Player.addBullet(new Bullet(this.position.x + 50, this.position.y + 50));
     }
 
     notifyServer() {
@@ -96,6 +96,10 @@ class Player {
         drawObj(this.head);
         if (knife)
             knife.draw();
+    }
+
+    static addBullet(bullet) {
+        console.log('nope');
     }
 }
 

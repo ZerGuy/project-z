@@ -1,6 +1,7 @@
 const Matter = require('matter-js');
 const Player = require('./player');
 const Renderer = require('./renderer');
+const Bullet = require('./bullet');
 
 const io = require('socket.io-client');
 const ioMsg = require('./constants/io-messages');
@@ -13,6 +14,8 @@ let player;
 let enemies = [];
 let obstacles = [];
 let boundaries = [];
+let bullets = [];
+
 let world;
 let engine;
 let renderer;
@@ -33,6 +36,10 @@ class Game {
 
         this.createWorld();
         this.initSocketListeners();
+
+        Player.addBullet = this.addBullet;
+        Bullet.mWorld = world;
+        Bullet.bullets = bullets;
     }
 
     createWorld() {
@@ -101,6 +108,12 @@ class Game {
         });
     }
 
+    addBullet(bullet) {
+        console.log(bullet);
+        bullets.push(bullet);
+        Matter.World.add(world, [bullet.body]);
+    }
+
     addEnemy(id) {
         console.log('player connected:', id);
         enemies.push(new Player(-100, -100, engine, id));
@@ -124,6 +137,7 @@ class Game {
             enemies,
             obstacles,
             boundaries,
+            bullets,
         });
     }
 }
