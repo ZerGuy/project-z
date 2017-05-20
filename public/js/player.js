@@ -3,6 +3,7 @@ const drawObj = require('./drawObj');
 const keyCodes = require('./constants/keyCodes');
 const ioMsg = require('./constants/io-messages');
 const Bullet = require('./bullet');
+const Renderer = require('./renderer');
 
 const Body = Matter.Body;
 const Vec = Matter.Vector;
@@ -15,7 +16,6 @@ const SPEED = 0.05;
 
 let mouseWasPressed = false;
 let mEngine;
-let knife;
 
 class Player {
     constructor(x, y, engine, id) {
@@ -24,9 +24,10 @@ class Player {
 
         this.body = Matter.Bodies.rectangle(x, y, BODY_X, BODY_Y);
         this.head = Matter.Bodies.circle(x, y, HEAD_RADIUS);
+        this.nose = Matter.Bodies.rectangle(x, y - 10, 5, 10);
 
         this.person = Body.create({
-            parts: [this.body, this.head],
+            parts: [this.body, this.head, this.nose],
             frictionAir: 0.9,
             angle: 0,
         });
@@ -39,9 +40,21 @@ class Player {
     }
 
     update() {
+        this.updateAngle();
         this.checkControls();
         this.checkMouse();
         this.notifyServer();
+    }
+
+    updateAngle() {
+        const x = p5.mouseX - Renderer.translateVector.x;
+        const y = p5.mouseY - Renderer.translateVector.y;
+
+        const dx = x - this.position.x;
+        const dy = y - this.position.y;
+
+        const angle = Vec.angle(Vec.create(0, -1), Vec.create(dx, dy)) + Math.PI / 2;
+        Matter.Body.setAngle(this.person, angle);
     }
 
     checkControls() {
@@ -55,13 +68,10 @@ class Player {
         force = Vec.normalise(force);
         force = Vec.mult(force, SPEED);
 
-        let angle = Vec.angle(Vec.create(0, 0), force) - Math.PI / 2;
-
         if (force.x === 0 && force.y === 0)
             return;
 
         Body.applyForce(this.person, this.person.position, force);
-        Body.setAngle(this.person, angle);
     }
 
     checkMouse() {
@@ -92,10 +102,10 @@ class Player {
         p5.stroke(0);
         p5.fill(255);
         p5.strokeWeight(1);
+
         drawObj(this.body);
         drawObj(this.head);
-        if (knife)
-            knife.draw();
+        drawObj(this.nose);
     }
 
     static addBullet(bullet) {

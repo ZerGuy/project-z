@@ -33,6 +33,8 @@ class Renderer {
         p5.mouseX = screenSize.x / 2;
         p5.mouseY = screenSize.y / 2;
 
+        Renderer.translateVector = translateVector;
+
         p5.noCursor();
     }
 
@@ -64,7 +66,7 @@ class Renderer {
             y: p5.lerp(translateVector.y, screenSize.y / 2 - player.person.position.y + cameraOffset.y, CAMERA_LERP)
         };
 
-        translateVector = {
+        Renderer.translateVector = translateVector = {
             x: newTranslateVector.x,
             y: newTranslateVector.y
         };
