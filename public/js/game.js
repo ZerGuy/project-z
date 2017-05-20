@@ -109,7 +109,6 @@ class Game {
     }
 
     addBullet(bullet) {
-        console.log(bullet);
         bullets.push(bullet);
         Matter.World.add(world, [bullet.body]);
     }

@@ -25,9 +25,10 @@ class Player {
         this.body = Matter.Bodies.rectangle(x, y, BODY_X, BODY_Y);
         this.head = Matter.Bodies.circle(x, y, HEAD_RADIUS);
         this.nose = Matter.Bodies.rectangle(x, y - 10, 5, 10);
+        this.shootFromPoint = Matter.Bodies.rectangle(x + BODY_X / 2, y - BODY_Y / 2 - 15, 1, 1, {isSensor: true});
 
         this.person = Body.create({
-            parts: [this.body, this.head, this.nose],
+            parts: [this.body, this.head, this.nose, this.shootFromPoint],
             frictionAir: 0.9,
             angle: 0,
         });
@@ -50,8 +51,8 @@ class Player {
         const x = p5.mouseX - Renderer.translateVector.x;
         const y = p5.mouseY - Renderer.translateVector.y;
 
-        const dx = x - this.position.x;
-        const dy = y - this.position.y;
+        const dx = x - this.shootFromPoint.position.x;
+        const dy = y - this.shootFromPoint.position.y;
 
         const angle = Vec.angle(Vec.create(0, -1), Vec.create(dx, dy)) + Math.PI / 2;
         Matter.Body.setAngle(this.person, angle);
@@ -85,7 +86,13 @@ class Player {
 
         mouseWasPressed = true;
 
-        Player.addBullet(new Bullet(this.position.x + 50, this.position.y + 50));
+        const x = p5.mouseX - Renderer.translateVector.x;
+        const y = p5.mouseY - Renderer.translateVector.y;
+
+        const dx = Math.cos(this.person.angle - Math.PI / 2);
+        const dy = Math.sin(this.person.angle - Math.PI / 2);
+
+        Player.addBullet(new Bullet(this.shootFromPoint.position.x, this.shootFromPoint.position.y, dx, dy));
     }
 
     notifyServer() {
