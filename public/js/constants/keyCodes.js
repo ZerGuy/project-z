@@ -3,6 +3,6 @@ const keyCodes = {
 	s: 83,
 	a: 65,
 	d: 68
-}
+};
 
 module.exports = keyCodes;
