@@ -5,7 +5,6 @@ const ioMsg = require('./constants/io-messages');
 const Bullet = require('./bullet');
 const Renderer = require('./renderer');
 
-const Body = Matter.Body;
 const Vec = Matter.Vector;
 
 const HEAD_RADIUS = 15;
@@ -15,29 +14,33 @@ const BODY_Y = 20;
 const SPEED = 0.05;
 
 let mouseWasPressed = false;
-let mEngine;
 
 class Player {
-    constructor(x, y, engine, id) {
+    constructor(x, y, id, world) {
         this.draw = this.draw.bind(this);
         this.checkControls = this.checkControls.bind(this);
 
-        this.body = Matter.Bodies.rectangle(x, y, BODY_X, BODY_Y);
-        this.head = Matter.Bodies.circle(x, y, HEAD_RADIUS);
-        this.nose = Matter.Bodies.rectangle(x, y - 10, 5, 10);
-        this.shootFromPoint = Matter.Bodies.rectangle(x + BODY_X / 2, y - BODY_Y / 2 - 15, 1, 1, {isSensor: true});
+        this.body = new p2.Box({width: BODY_X, height: BODY_Y});
+        this.head = new p2.Circle({radius: HEAD_RADIUS});
+        this.nose = new p2.Box({width: 5, height: 10});
+        this.shootFromPoint = new p2.Box();
 
-        this.person = Body.create({
-            parts: [this.body, this.head, this.nose, this.shootFromPoint],
+        this.person = new p2.Body({
+            position: [x, y]
+/*
             frictionAir: 0.9,
-            angle: 0,
+*/
         });
 
-        Matter.World.add(engine.world, [this.person]);
+        this.person.addShape(this.body);
+        this.person.addShape(this.head);
+        this.person.addShape(this.nose, [0, -10]);
+        this.person.addShape(this.shootFromPoint, [x + BODY_X / 2, y - BODY_Y / 2 - 15]);
+
+        world.addBody(this.person);
 
         this.position = this.person.position;
         this.id = id;
-        mEngine = engine;
     }
 
     update() {
@@ -55,7 +58,7 @@ class Player {
         const dy = y - this.shootFromPoint.position.y;
 
         const angle = Vec.angle(Vec.create(0, -1), Vec.create(dx, dy)) + Math.PI / 2;
-        Matter.Body.setAngle(this.person, angle);
+        this.person.angle = angle;
     }
 
     checkControls() {
@@ -76,6 +79,7 @@ class Player {
     }
 
     checkMouse() {
+        return;
         if (!p5.mouseIsPressed){
             mouseWasPressed = false;
             return;
@@ -97,8 +101,8 @@ class Player {
 
     notifyServer() {
         const msg = {
-            x: this.person.position.x,
-            y: this.person.position.y,
+            x: this.person.position[0],
+            y: this.person.position[1],
             angle: this.person.angle,
         };
 
@@ -110,9 +114,7 @@ class Player {
         p5.fill(255);
         p5.strokeWeight(1);
 
-        drawObj(this.body);
-        drawObj(this.head);
-        drawObj(this.nose);
+        drawObj(this.person);
     }
 
     static addBullet(bullet) {

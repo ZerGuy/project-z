@@ -8,8 +8,6 @@ const ioMsg = require('./constants/io-messages');
 
 const socket = io();
 
-const Engine = Matter.Engine;
-
 let player;
 let enemies = [];
 let obstacles = [];
@@ -43,18 +41,14 @@ class Game {
     }
 
     createWorld() {
-        engine = Engine.create();
-        Engine.run(engine);
-
-        world = engine.world;
-        world.gravity.y = 0;
-        world.bounds.min.x = 0;
-        world.bounds.min.y = 0;
+        world = new p2.World({
+            gravity: [0, 0]
+        });
     }
 
     initSocketListeners() {
         socket.on(ioMsg.worldSize, this.setWorldSize);
-        socket.on(ioMsg.obstacles, this.loadObstacles);
+        // socket.on(ioMsg.obstacles, this.loadObstacles);
         socket.on(ioMsg.boundaries, this.loadBoundaries);
 
         socket.on(ioMsg.spawn, this.spawnPlayer);
@@ -69,18 +63,37 @@ class Game {
     }
 
     loadObstacles(data) {
-        data.forEach(ob => obstacles.push(Matter.Bodies.rectangle(ob.x, ob.y, ob.width, ob.height, {isStatic: true})));
-        Matter.World.add(world, obstacles);
+        console.log('loadObstacles', data);
+        data.forEach(ob => {
+            const shape = new p2.Box({width: ob.width, height: ob.height});
+            const body = new p2.Body({
+                mass: 0,
+                position: [ob.x, ob.y]
+            });
+            body.addShape(shape);
+            world.addBody(body);
+            obstacles.push(body);
+        });
         renderer.initWalls(obstacles);
     }
 
     loadBoundaries(data) {
-        data.forEach(ob => boundaries.push(Matter.Bodies.rectangle(ob.x, ob.y, ob.width, ob.height, {isStatic: true})));
-        Matter.World.add(world, boundaries);
+        console.log('loadBoundaries', data);
+        data.forEach(ob => {
+            const shape = new p2.Box({width: ob.width, height: ob.height});
+            const body = new p2.Body({
+                mass: 0,
+                position: [ob.x, ob.y]
+            });
+            body.addShape(shape);
+            world.addBody(body);
+            boundaries.push(body);
+            console.log(shape);
+        });
     }
 
     spawnPlayer(data) {
-        player = new Player(data.x, data.y, engine, socket.io.engine.id);
+        player = new Player(data.x, data.y, socket.io.engine.id, world);
         player.socket = socket;
     }
 
@@ -110,7 +123,7 @@ class Game {
 
     addBullet(bullet) {
         bullets.push(bullet);
-        Matter.World.add(world, [bullet.body]);
+        world.addBody(bullet.body);
     }
 
     addEnemy(id) {

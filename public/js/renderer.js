@@ -43,10 +43,10 @@ class Renderer {
         this.translate(params.player);
 
         this.drawFloor();
-        this.drawBullets(params.bullets);
-        this.drawEnemies(params.enemies);
-        this.fillInvisibleArea(params.player);
-        this.drawObstacles(params.obstacles);
+        // this.drawBullets(params.bullets);
+        // this.drawEnemies(params.enemies);
+        // this.fillInvisibleArea(params.player);
+        // this.drawObstacles(params.obstacles);
         this.drawBoundaries(params.boundaries);
         this.drawPlayer(params.player);
         this.drawAim();
@@ -62,8 +62,8 @@ class Renderer {
         };
 
         const newTranslateVector = {
-            x: p5.lerp(translateVector.x, screenSize.x / 2 - player.person.position.x + cameraOffset.x, CAMERA_LERP),
-            y: p5.lerp(translateVector.y, screenSize.y / 2 - player.person.position.y + cameraOffset.y, CAMERA_LERP)
+            x: p5.lerp(translateVector.x, screenSize.x / 2 - player.person.position[0] + cameraOffset.x, CAMERA_LERP),
+            y: p5.lerp(translateVector.y, screenSize.y / 2 - player.person.position[1] + cameraOffset.y, CAMERA_LERP)
         };
 
         Renderer.translateVector = translateVector = {
@@ -135,21 +135,23 @@ class Renderer {
     }
 
     initWalls(obstacles) {
-        obstacles.forEach((a) => {
+        console.log(obstacles);
+        obstacles.forEach((obstacle) => {
+            const a = obstacle.shapes[0];
             for (let i = 0; i < a.vertices.length - 1; i++) {
                 walls.push({
-                    ax: a.vertices[i].x,
-                    ay: a.vertices[i].y,
-                    bx: a.vertices[i + 1].x,
-                    by: a.vertices[i + 1].y,
+                    ax: a.vertices[i][0],
+                    ay: a.vertices[i][1],
+                    bx: a.vertices[i + 1][0],
+                    by: a.vertices[i + 1][1],
                 });
             }
 
             walls.push({
-                ax: a.vertices[0].x,
-                ay: a.vertices[0].y,
-                bx: a.vertices[a.vertices.length - 1].x,
-                by: a.vertices[a.vertices.length - 1].y,
+                ax: a.vertices[0][0],
+                ay: a.vertices[0][1],
+                bx: a.vertices[a.vertices.length - 1][0],
+                by: a.vertices[a.vertices.length - 1][1],
             });
         });
     }
@@ -158,8 +160,12 @@ class Renderer {
         if (!player)
             return;
 
-        const playerPosition = player.person.position;
+        const playerPosition = {
+            x: player.person.position[0],
+            y: player.person.position[1]
+        };
         const res = sal.compute(playerPosition, walls);
+        console.log(res);
 
         p5.stroke(NOT_SEEN_COLOR + 50);
         p5.strokeWeight(1);

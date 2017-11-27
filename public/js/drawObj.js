@@ -1,9 +1,15 @@
-function drawObj(obj) {
-    const vertices = obj.vertices;
+"use strict";
+function drawObj(body) {
+    body.shapes.forEach(shape => {
+        const vertices = shape.vertices;
 
-    p5.beginShape();
-        vertices.forEach((v) => p5.vertex(v.x, v.y));
-    p5.endShape(p5.CLOSE);
+        if (!vertices)
+            return;
+
+        p5.beginShape();
+        vertices.forEach(v => p5.vertex(v[0], v[1]));
+        p5.endShape(p5.CLOSE);
+    });
 }
 
 module.exports = drawObj;
