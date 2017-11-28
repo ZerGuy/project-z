@@ -18,6 +18,7 @@ let world;
 let engine;
 let renderer;
 
+let box;
 class Game {
     constructor() {
         this.draw = this.draw.bind(this);
@@ -44,11 +45,17 @@ class Game {
         world = new p2.World({
             gravity: [0, 0]
         });
+
+        console.log(world);
+        world.on('beginContact', function (event) {
+            console.log(event);
+        });
+
     }
 
     initSocketListeners() {
         socket.on(ioMsg.worldSize, this.setWorldSize);
-        // socket.on(ioMsg.obstacles, this.loadObstacles);
+        socket.on(ioMsg.obstacles, this.loadObstacles);
         socket.on(ioMsg.boundaries, this.loadBoundaries);
 
         socket.on(ioMsg.spawn, this.spawnPlayer);
@@ -88,7 +95,7 @@ class Game {
             body.addShape(shape);
             world.addBody(body);
             boundaries.push(body);
-            console.log(shape);
+            console.log(body);
         });
     }
 
@@ -141,6 +148,8 @@ class Game {
 
 
     draw() {
+        world.step(1/60);
+
         if (player)
             player.update();
 
@@ -150,6 +159,7 @@ class Game {
             obstacles,
             boundaries,
             bullets,
+            box
         });
     }
 }

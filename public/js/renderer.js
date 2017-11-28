@@ -45,11 +45,15 @@ class Renderer {
         this.drawFloor();
         // this.drawBullets(params.bullets);
         // this.drawEnemies(params.enemies);
-        // this.fillInvisibleArea(params.player);
-        // this.drawObstacles(params.obstacles);
+        this.fillInvisibleArea(params.player);
+        this.drawObstacles(params.obstacles);
         this.drawBoundaries(params.boundaries);
         this.drawPlayer(params.player);
         this.drawAim();
+
+        // drawObj(params.box);
+        // console.log(params.box.position);
+        // console.log(params.player && params.player.person.velocity);
     }
 
     translate(player) {
@@ -135,23 +139,25 @@ class Renderer {
     }
 
     initWalls(obstacles) {
-        console.log(obstacles);
-        obstacles.forEach((obstacle) => {
-            const a = obstacle.shapes[0];
-            for (let i = 0; i < a.vertices.length - 1; i++) {
+        obstacles.forEach((body) => {
+            const shape = body.shapes[0];
+            const x = body.position[0];
+            const y = body.position[1];
+
+            for (let i = 0; i < shape.vertices.length - 1; i++) {
                 walls.push({
-                    ax: a.vertices[i][0],
-                    ay: a.vertices[i][1],
-                    bx: a.vertices[i + 1][0],
-                    by: a.vertices[i + 1][1],
+                    ax: x - shape.vertices[i][0],
+                    ay: y - shape.vertices[i][1],
+                    bx: x + shape.vertices[i + 1][0],
+                    by: y + shape.vertices[i + 1][1],
                 });
             }
 
             walls.push({
-                ax: a.vertices[0][0],
-                ay: a.vertices[0][1],
-                bx: a.vertices[a.vertices.length - 1][0],
-                by: a.vertices[a.vertices.length - 1][1],
+                ax: x - shape.vertices[0][0],
+                ay: y - shape.vertices[0][1],
+                bx: x + shape.vertices[shape.vertices.length - 1][0],
+                by: y + shape.vertices[shape.vertices.length - 1][1],
             });
         });
     }
@@ -165,7 +171,6 @@ class Renderer {
             y: player.person.position[1]
         };
         const res = sal.compute(playerPosition, walls);
-        console.log(res);
 
         p5.stroke(NOT_SEEN_COLOR + 50);
         p5.strokeWeight(1);

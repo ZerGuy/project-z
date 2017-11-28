@@ -11,7 +11,7 @@ const HEAD_RADIUS = 15;
 const BODY_X = 60;
 const BODY_Y = 20;
 
-const SPEED = 0.05;
+const SPEED = 50;
 
 let mouseWasPressed = false;
 
@@ -23,19 +23,18 @@ class Player {
         this.body = new p2.Box({width: BODY_X, height: BODY_Y});
         this.head = new p2.Circle({radius: HEAD_RADIUS});
         this.nose = new p2.Box({width: 5, height: 10});
-        this.shootFromPoint = new p2.Box();
+        this.shootFromPoint = new p2.Box({sensor: true});
 
         this.person = new p2.Body({
-            position: [x, y]
-/*
-            frictionAir: 0.9,
-*/
+            position: [x, y],
+            damping: 0.99,
+            mass: 1
         });
 
         this.person.addShape(this.body);
         this.person.addShape(this.head);
         this.person.addShape(this.nose, [0, -10]);
-        this.person.addShape(this.shootFromPoint, [x + BODY_X / 2, y - BODY_Y / 2 - 15]);
+        this.person.addShape(this.shootFromPoint, [BODY_X / 2, -BODY_Y / 2 - 15]);
 
         world.addBody(this.person);
 
@@ -54,9 +53,11 @@ class Player {
         const x = p5.mouseX - Renderer.translateVector.x;
         const y = p5.mouseY - Renderer.translateVector.y;
 
-        const dx = x - this.shootFromPoint.position.x;
-        const dy = y - this.shootFromPoint.position.y;
+        const dx = x - this.shootFromPoint.position[0]; //todo calculate correctly
+        const dy = y - this.shootFromPoint.position[1];
+        console.log(this.shootFromPoint);
 
+        //todo get rid of matter
         const angle = Vec.angle(Vec.create(0, -1), Vec.create(dx, dy)) + Math.PI / 2;
         this.person.angle = angle;
     }
@@ -64,10 +65,10 @@ class Player {
     checkControls() {
         let force = Vec.create(0, 0);
 
-        force = addForce(force, keyCodes.w, 0, -SPEED);
-        force = addForce(force, keyCodes.s, 0, SPEED);
-        force = addForce(force, keyCodes.d, SPEED, 0);
-        force = addForce(force, keyCodes.a, -SPEED, 0);
+        force = addForce(force, keyCodes.w, 0, -1);
+        force = addForce(force, keyCodes.s, 0, 1);
+        force = addForce(force, keyCodes.d, 1, 0);
+        force = addForce(force, keyCodes.a, -1, 0);
 
         force = Vec.normalise(force);
         force = Vec.mult(force, SPEED);
@@ -75,11 +76,11 @@ class Player {
         if (force.x === 0 && force.y === 0)
             return;
 
-        Body.applyForce(this.person, this.person.position, force);
+        this.person.applyImpulse([force.x, force.y]);
     }
 
     checkMouse() {
-        return;
+        return; //todo
         if (!p5.mouseIsPressed){
             mouseWasPressed = false;
             return;
