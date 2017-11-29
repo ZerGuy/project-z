@@ -53,9 +53,11 @@ class Player {
         const x = p5.mouseX - Renderer.translateVector.x;
         const y = p5.mouseY - Renderer.translateVector.y;
 
-        const dx = x - this.shootFromPoint.position[0]; //todo calculate correctly
-        const dy = y - this.shootFromPoint.position[1];
-        console.log(this.shootFromPoint);
+        let shootFromPointWorldPosition = [];
+        this.person.toWorldFrame(shootFromPointWorldPosition, this.shootFromPoint.position);
+
+        const dx = x - shootFromPointWorldPosition[0];
+        const dy = y - shootFromPointWorldPosition[1];
 
         //todo get rid of matter
         const angle = Vec.angle(Vec.create(0, -1), Vec.create(dx, dy)) + Math.PI / 2;
@@ -80,7 +82,6 @@ class Player {
     }
 
     checkMouse() {
-        return; //todo
         if (!p5.mouseIsPressed){
             mouseWasPressed = false;
             return;
@@ -97,7 +98,9 @@ class Player {
         const dx = Math.cos(this.person.angle - Math.PI / 2);
         const dy = Math.sin(this.person.angle - Math.PI / 2);
 
-        Player.addBullet(new Bullet(this.shootFromPoint.position.x, this.shootFromPoint.position.y, dx, dy));
+        let shootFromPointWorldPosition = [];
+        this.person.toWorldFrame(shootFromPointWorldPosition, this.shootFromPoint.position);
+        Player.addBullet(new Bullet(shootFromPointWorldPosition[0], shootFromPointWorldPosition[1], dx, dy));
     }
 
     notifyServer() {

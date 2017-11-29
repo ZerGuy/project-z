@@ -1,6 +1,8 @@
 "use strict";
 function drawObj(body) {
     body.shapes.forEach(shape => {
+        if (shape.sensor)
+            return;
 
         if (shape instanceof p2.Box)
             return drawBox(shape, body.position, body.angle);
@@ -23,6 +25,7 @@ function drawBox(shape, position, angle) {
     p5.push();
     p5.translate(position[0], position[1]);
     p5.rotate(angle);
+    p5.translate(shape.position[0], shape.position[1]);
     p5.rect(-shape.width / 2, -shape.height / 2, shape.width, shape.height);
     p5.pop();
 }

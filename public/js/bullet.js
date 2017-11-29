@@ -16,9 +16,18 @@ class Bullet {
             frictionAir: 0.001,
         };
 
-        this.body = Matter.Bodies.rectangle(x, y, 10, 20, config);
+        const shape = new p2.Box({
+            width: 5,
+            height: 10
+        });
 
-        Matter.Body.applyForce(this.body, this.body.position, Matter.Vector.create(this.dx, this.dy));
+        this.body = new p2.Body({
+            position: [x,y],
+            mass: 0.01,
+            velocity: [dx, dy],
+        });
+
+        this.body.addShape(shape);
     }
 
     update() {
@@ -26,10 +35,11 @@ class Bullet {
     }
 
     draw() {
-        if (this.body.velocity.x !== 0 && this.body.velocity.y !== 0){
-            const angle = Matter.Vector.angle(Matter.Vector.create(0, -1), this.body.velocity) + Math.PI / 2;
-            Matter.Body.setAngle(this.body, angle);
-        }
+        //todo
+        // if (this.body.velocity[0] !== 0 && this.body.velocity[1] !== 0){
+        //     const angle = Matter.Vector.angle(Matter.Vector.create(0, -1), this.body.velocity) + Math.PI / 2;
+        //     this.body.angle = angle;
+        // }
 
         p5.stroke(0);
         p5.fill(10, 200, 100);

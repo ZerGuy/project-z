@@ -43,8 +43,8 @@ class Renderer {
         this.translate(params.player);
 
         this.drawFloor();
-        // this.drawBullets(params.bullets);
-        // this.drawEnemies(params.enemies);
+        this.drawBullets(params.bullets);
+        this.drawEnemies(params.enemies);
         this.fillInvisibleArea(params.player);
         this.drawObstacles(params.obstacles);
         this.drawBoundaries(params.boundaries);
