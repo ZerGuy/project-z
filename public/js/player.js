@@ -13,20 +13,32 @@ const BODY_Y = 20;
 
 const SPEED = 50;
 
+const bulletSpawnPosition = [BODY_X / 2, -BODY_Y / 2 - 15];
+
 let mouseWasPressed = false;
 
 class Player {
-    constructor(x, y, id, world) {
+    constructor(position, id, world) {
         this.draw = this.draw.bind(this);
         this.checkControls = this.checkControls.bind(this);
 
+        this.world = world;
+
         this.body = new p2.Box({width: BODY_X, height: BODY_Y});
-        this.head = new p2.Circle({radius: HEAD_RADIUS});
-        this.nose = new p2.Box({width: 5, height: 10});
-        this.shootFromPoint = new p2.Box({sensor: true});
+        this.head = new p2.Circle({
+            radius: HEAD_RADIUS,
+            collisionResponse: false,
+            sensor: true
+        });
+        this.nose = new p2.Box({
+            width: 5,
+            height: 10,
+            collisionResponse: false,
+            sensor: true
+        });
 
         this.person = new p2.Body({
-            position: [x, y],
+            position: position,
             damping: 0.99,
             mass: 1
         });
@@ -34,12 +46,12 @@ class Player {
         this.person.addShape(this.body);
         this.person.addShape(this.head);
         this.person.addShape(this.nose, [0, -10]);
-        this.person.addShape(this.shootFromPoint, [BODY_X / 2, -BODY_Y / 2 - 15]);
 
         world.addBody(this.person);
 
         this.position = this.person.position;
         this.id = id;
+        this.shotsCount = 0;
     }
 
     update() {
@@ -54,7 +66,7 @@ class Player {
         const y = p5.mouseY - Renderer.translateVector.y;
 
         let shootFromPointWorldPosition = [];
-        this.person.toWorldFrame(shootFromPointWorldPosition, this.shootFromPoint.position);
+        this.person.toWorldFrame(shootFromPointWorldPosition, bulletSpawnPosition);
 
         const dx = x - shootFromPointWorldPosition[0];
         const dy = y - shootFromPointWorldPosition[1];
@@ -82,7 +94,7 @@ class Player {
     }
 
     checkMouse() {
-        if (!p5.mouseIsPressed){
+        if (!p5.mouseIsPressed) {
             mouseWasPressed = false;
             return;
         }
@@ -98,18 +110,21 @@ class Player {
         const dx = Math.cos(this.person.angle - Math.PI / 2);
         const dy = Math.sin(this.person.angle - Math.PI / 2);
 
+        this.shotsCount++;
         let shootFromPointWorldPosition = [];
-        this.person.toWorldFrame(shootFromPointWorldPosition, this.shootFromPoint.position);
-        Player.addBullet(new Bullet(shootFromPointWorldPosition[0], shootFromPointWorldPosition[1], dx, dy));
+        this.person.toWorldFrame(shootFromPointWorldPosition, bulletSpawnPosition);
+        Player.createBullet({
+            position: shootFromPointWorldPosition,
+            direction: [dx, dy],
+            id: this.id + this.shotsCount
+        });
     }
 
     notifyServer() {
         const msg = {
-            x: this.person.position[0],
-            y: this.person.position[1],
+            position: [this.person.position[0], this.person.position[1]],
             angle: this.person.angle,
         };
-
         this.socket.emit(ioMsg.playerPosition, msg);
     }
 
@@ -119,10 +134,6 @@ class Player {
         p5.strokeWeight(1);
 
         drawObj(this.person);
-    }
-
-    static addBullet(bullet) {
-        console.log('nope');
     }
 }
 

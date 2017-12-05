@@ -36,7 +36,7 @@ class Game {
         this.createWorld();
         this.initSocketListeners();
 
-        Player.addBullet = this.addBullet;
+        Player.createBullet = this.addBulletAndNotifyServer.bind(this);
         Bullet.mWorld = world;
         Bullet.bullets = bullets;
     }
@@ -47,10 +47,7 @@ class Game {
         });
 
         console.log(world);
-        world.on('beginContact', function (event) {
-            console.log(event);
-        });
-
+        world.on('beginContact', this.handleContact);
     }
 
     initSocketListeners() {
@@ -63,6 +60,9 @@ class Game {
 
         socket.on(ioMsg.playerConnected, this.addEnemy);
         socket.on(ioMsg.playerDisconnected, this.removeEnemy);
+
+        socket.on(ioMsg.addBullet, this.addBullet);
+        socket.on(ioMsg.removeBullet, this.removeBullet);
     }
 
     setWorldSize(data) {
@@ -99,8 +99,8 @@ class Game {
         });
     }
 
-    spawnPlayer(data) {
-        player = new Player(data.x, data.y, socket.io.engine.id, world);
+    spawnPlayer(position) {
+        player = new Player(position, socket.io.engine.id, world);
         player.socket = socket;
     }
 
@@ -119,23 +119,46 @@ class Game {
                 if (p.angle === undefined)
                     return;
 
-                Matter.Body.setPosition(enemies[i].person, {x: p.x, y: p.y});
-                Matter.Body.setAngle(enemies[i].person, p.angle);
+                enemies[i].person.position = p.position;
+                enemies[i].person.angle = p.angle;
                 return;
             }
 
-            enemies.push(new Player(p.x, p.y, engine, p.id));
+            enemies.push(new Player(p.position, p.id, world));
         });
     }
 
-    addBullet(bullet) {
+    addBulletAndNotifyServer(bulletOptions){
+        const bullet = this.addBullet(bulletOptions);
+
+        socket.emit(ioMsg.addBullet, {
+            id: bullet.id,
+            position: bullet.getPosition(),
+            velocity: bullet.getVelocity()
+        });
+    }
+
+    addBullet(bulletOptions) {
+        console.log(bulletOptions);
+        const bullet = new Bullet(bulletOptions);
+
         bullets.push(bullet);
         world.addBody(bullet.body);
+        console.log(bullets);
+
+        return bullet;
+    }
+
+    removeBullet(bulletId) {
+        const i = bullets.findIndex(bullet => bullet.id === bulletId);
+        const removedBullets = bullets.splice(i, 1);
+        if (removedBullets.length > 0)
+            world.removeBody(removedBullets[0].body);
     }
 
     addEnemy(id) {
         console.log('player connected:', id);
-        enemies.push(new Player(-100, -100, engine, id));
+        enemies.push(new Player([-100, -100], id, world));
     }
 
     removeEnemy(id) {
@@ -143,6 +166,19 @@ class Game {
         for (var i = 0; i < enemies.length; i++) {
             if (enemies[i].id === id)
                 return enemies.splice(i, 1);
+        }
+    }
+
+    handleContact(event) {
+        if (isBullet(event.bodyA) || isBullet(event.bodyB)) {
+            const bulletToRemove = isBullet(event.bodyA) ? event.bodyA : event.bodyB;
+            const i = bullets.findIndex(b => b.body === bulletToRemove);
+            bullets.splice(i, 1);
+            world.removeBody(bulletToRemove);
+        }
+
+        function isBullet(body) {
+            return bullets.some(bullet => body === bullet.body);
         }
     }
 
@@ -161,6 +197,10 @@ class Game {
             bullets,
             box
         });
+    }
+
+    static getSocket() {
+        return socket;
     }
 }
 

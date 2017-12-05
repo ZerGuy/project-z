@@ -1,27 +1,25 @@
-const Matter  = require('matter-js');
-const Body = Matter.Body;
+const p2 = require('p2');
 
 const HEAD_RADIUS = 15;
 const BODY_X = 60;
 const BODY_Y = 20;
 
 class Player {
-    constructor(socket, pos, engine) {
+    constructor(socket, pos, world) {
         this.socket = socket;
         this.id = socket.id;
 
-        this.body = Matter.Bodies.rectangle(pos.x, pos.y, BODY_X, BODY_Y);
-        this.head = Matter.Bodies.circle(pos.x, pos.y, HEAD_RADIUS);
+        this.bodyShape = new p2.Box({width: BODY_X, height: BODY_Y});
 
-        this.person = Body.create({
-            parts: [this.body, this.head],
-            frictionAir: 0.9,
-            angle: 0,
+        this.person = new p2.Body({
+            position: pos,
+            damping: 0.99,
+            mass: 1
         });
 
-        Matter.World.add(engine.world, [this.person]);
+        this.person.addShape(this.bodyShape);
 
-        this.position = this.person.position;
+        world.addBody(this.person);
     }
 }
 

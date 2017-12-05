@@ -1,9 +1,6 @@
 "use strict";
 function drawObj(body) {
     body.shapes.forEach(shape => {
-        if (shape.sensor)
-            return;
-
         if (shape instanceof p2.Box)
             return drawBox(shape, body.position, body.angle);
 

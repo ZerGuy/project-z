@@ -1,20 +1,18 @@
-const Matter = require('matter-js');
 const drawObj = require('./drawObj');
 
-const SPEED = 3;
+const SPEED = 1000;
 
 class Bullet {
-    constructor(x, y, dx, dy) {
-        this.dx = dx / 100 * SPEED;
-        this.dy = dy / 100 * SPEED;
+    constructor({position, direction, id, velocity}) {
+        this.id = id;
 
-        const angle = 2 * Matter.Vector.angle(Matter.Vector.create(0, -1), Matter.Vector.create(dx, dy)); //WTF
+        if (!velocity) {
+            let dx = direction[0] * SPEED;
+            let dy = direction[1] * SPEED;
+            velocity = [dx, dy]
+        }
 
-        const config = {
-            angle: angle,
-            restitution: 0.9,
-            frictionAir: 0.001,
-        };
+        const angle = Math.atan2(velocity[0], -velocity[1]);
 
         const shape = new p2.Box({
             width: 5,
@@ -22,9 +20,11 @@ class Bullet {
         });
 
         this.body = new p2.Body({
-            position: [x,y],
+            angle: angle,
+            position: position,
             mass: 0.01,
-            velocity: [dx, dy],
+            velocity: velocity,
+            ccdSpeedThreshold: 1
         });
 
         this.body.addShape(shape);
@@ -35,16 +35,18 @@ class Bullet {
     }
 
     draw() {
-        //todo
-        // if (this.body.velocity[0] !== 0 && this.body.velocity[1] !== 0){
-        //     const angle = Matter.Vector.angle(Matter.Vector.create(0, -1), this.body.velocity) + Math.PI / 2;
-        //     this.body.angle = angle;
-        // }
-
         p5.stroke(0);
         p5.fill(10, 200, 100);
         p5.strokeWeight(1);
         drawObj(this.body);
+    }
+
+    getPosition() {
+        return [this.body.position[0], this.body.position[1]];
+    }
+
+    getVelocity() {
+        return [this.body.velocity[0], this.body.velocity[1]];
     }
 }
 

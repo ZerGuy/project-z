@@ -6,6 +6,9 @@ module.exports = {
 	playerDisconnected	: 'player disconnected',
 	spawn           	: 'spawn',
 
+    addBullet			: 'add bullet',
+	removeBullet		: 'remove bullet',
+
 	worldSize			: 'world size',
 	obstacles       	: 'obstacles',
 	boundaries      	: 'boundaries',

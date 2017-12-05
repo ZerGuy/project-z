@@ -20,7 +20,7 @@ class Engine {
         world = new World();
 
         io.on('connection', this.onConnect);
-        setInterval(this.sendPlayersPositions, 1000 / TICK_RATE);
+        setInterval(this.update.bind(this), 1000 / TICK_RATE);
     }
 
     onConnect(socket) {
@@ -33,6 +33,9 @@ class Engine {
 
         socket.on(ioMsg.playerPosition, data => world.updatePlayer(data, socket.id));
 
+        socket.on(ioMsg.addBullet, this.registerNewBullet.bind(this, socket));
+        socket.on(ioMsg.removeBullet, data => world.removeBullet(data, socket.id));
+
         socket.on('disconnect', function () {
             world.removePlayer(socket.id);
             io.emit(ioMsg.playerDisconnected, socket.id);
@@ -41,10 +44,16 @@ class Engine {
 
     addPlayer(socket) {
         const spawnPos = world.addPlayer(socket);
-        socket.emit(ioMsg.spawn, {x: spawnPos.x, y: spawnPos.y});
+        socket.emit(ioMsg.spawn, spawnPos);
 
         console.log('Player connected', socket.id);
         console.log('Playes total: ', world.players.length);
+    }
+
+    registerNewBullet(socket, data) {
+        console.log(data);
+        world.addBullet(data);
+        socket.broadcast.emit(ioMsg.addBullet, data);
     }
 
     sendPlayersPositions() {
@@ -52,8 +61,7 @@ class Engine {
             return _.map(players, function (p) {
                 return {
                     id: p.id,
-                    x: p.position.x,
-                    y: p.position.y,
+                    position: [p.person.position[0], p.person.position[1]],
                     angle: p.person.angle,
                 }
             });
@@ -61,6 +69,11 @@ class Engine {
 
         const positions = createPositionsArray(world.players);
         io.emit(ioMsg.players, positions)
+    }
+
+    update() {
+        world.update(1/ TICK_RATE);
+        this.sendPlayersPositions();
     }
 }
 
