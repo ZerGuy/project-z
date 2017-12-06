@@ -53,7 +53,16 @@ class World {
     generateObstacles() {
         obstacles.push(World.createObstacleOptions(500, 100, 50, 100));
         obstacles.push(World.createObstacleOptions(100, 100, 50, 100));
-        obstacles.push(World.createObstacleOptions(450, 400, 700, 50));
+        obstacles.push(World.createObstacleOptions(350, 400, 500, 50));
+        obstacles.push(World.createObstacleOptions(800, 200, 70, 300));
+        obstacles.push(World.createObstacleOptions(300, 600, 100, 200));
+        obstacles.push(World.createObstacleOptions(700, 670, 300, 20));
+        obstacles.push(World.createObstacleOptions(1000, 1070, 100, 220));
+        obstacles.push(World.createObstacleOptions(1100, 500, 200, 120));
+        obstacles.push(World.createObstacleOptions(1300, 200, 50, 50));
+        obstacles.push(World.createObstacleOptions(500, 1000, 70, 150));
+        obstacles.push(World.createObstacleOptions(100, 700, 70, 150));
+        obstacles.push(World.createObstacleOptions(1100, 200, 100, 200));
 
         obstacles.forEach(obstacle => {
             p2World.addBody(World.createObstacleBody(obstacle));

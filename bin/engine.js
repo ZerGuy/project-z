@@ -51,7 +51,6 @@ class Engine {
     }
 
     registerNewBullet(socket, data) {
-        console.log(data);
         world.addBullet(data);
         socket.broadcast.emit(ioMsg.addBullet, data);
     }
