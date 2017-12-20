@@ -16,11 +16,13 @@ const bullets = [];
 
 
 class World {
-    constructor() {
+    constructor(options) {
         this.size = SIZE;
         this.obstacles = obstacles;
         this.boundaries = boundaries;
         this.players = players;
+
+        this.notifyPlayerWasHit = options.notifyPlayerWasHit;
 
         this.createP2World();
         this.createBoundaries();
@@ -31,7 +33,7 @@ class World {
         p2World = new p2.World({
             gravity: [0, 0]
         });
-        p2World.on('beginContact', this.handleContact);
+        p2World.on('beginContact', this.handleContact.bind(this));
     }
 
     createBoundaries() {
@@ -70,9 +72,8 @@ class World {
     }
 
 
-
     addPlayer(socket) {
-        const pos = generateSpawnPosition();
+        const pos = World.generateSpawnPosition();
         players.push(new Player(socket, pos, p2World));
         return pos;
     }
@@ -82,8 +83,8 @@ class World {
             if (players[i].id !== id)
                 continue;
 
-            players[i].person.position = data.position;
-            players[i].person.angle = data.angle;
+            players[i].p2Body.position = data.position;
+            players[i].p2Body.angle = data.angle;
             return;
         }
     }
@@ -96,7 +97,7 @@ class World {
 
             const removedPlayer = players.splice(i, 1);
             if (removedPlayer.length > 0)
-                p2World.removeBody(removedPlayer[0].person);
+                p2World.removeBody(removedPlayer[0].p2Body);
 
             break;
         }
@@ -117,15 +118,26 @@ class World {
     }
 
     handleContact(event) {
-        if (isBullet(event.bodyA) || isBullet(event.bodyB)) {
-            const bulletToRemove = isBullet(event.bodyA) ? event.bodyA : event.bodyB;
-            const i = bullets.findIndex(b => b.body === bulletToRemove);
-            bullets.splice(i, 1);
-            p2World.removeBody(bulletToRemove);
+        const bulletToRemove = getBulletParticipatedInEvent(event);
+        if (!bulletToRemove)
+            return;
+
+        const i = bullets.findIndex(b => b.body === bulletToRemove);
+        bullets.splice(i, 1);
+        p2World.removeBody(bulletToRemove);
+
+        const playerWhoWasHit = getPlayerParticipatedInEvent(event);
+        if (playerWhoWasHit) {
+            playerWhoWasHit.p2Body.position = World.generateSpawnPosition();
+            this.notifyPlayerWasHit(playerWhoWasHit);
         }
 
-        function isBullet(body) {
-            return bullets.some(bullet => body === bullet.body);
+        function getBulletParticipatedInEvent(event) {
+            return bullets.find(bullet => event.bodyA === bullet.body) || bullets.find(bullet => event.bodyB === bullet.body);
+        }
+
+        function getPlayerParticipatedInEvent(event) {
+            return players.find(player => event.bodyA === player.p2Body) || players.find(player => event.bodyB === player.p2Body);
         }
     }
 
@@ -172,11 +184,11 @@ class World {
             }
         });
     }
+
+    static generateSpawnPosition() {
+        return [200 + players.length * 100, 250];
+    }
 }
 
-
-function generateSpawnPosition() {
-    return [200 + players.length * 100, 250];
-}
 
 module.exports = World;

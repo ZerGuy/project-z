@@ -11,15 +11,15 @@ class Player {
 
         this.bodyShape = new p2.Box({width: BODY_X, height: BODY_Y});
 
-        this.person = new p2.Body({
+        this.p2Body = new p2.Body({
             position: pos,
             damping: 0.99,
             mass: 1
         });
 
-        this.person.addShape(this.bodyShape);
+        this.p2Body.addShape(this.bodyShape);
 
-        world.addBody(this.person);
+        world.addBody(this.p2Body);
     }
 }
 

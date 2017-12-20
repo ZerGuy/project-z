@@ -17,7 +17,9 @@ class Engine {
     }
 
     init() {
-        world = new World();
+        world = new World({
+            notifyPlayerWasHit: this.notifyPlayerWasHit
+        });
 
         io.on('connection', this.onConnect);
         setInterval(this.update.bind(this), 1000 / TICK_RATE);
@@ -60,14 +62,23 @@ class Engine {
             return _.map(players, function (p) {
                 return {
                     id: p.id,
-                    position: [p.person.position[0], p.person.position[1]],
-                    angle: p.person.angle,
+                    position: [p.p2Body.position[0], p.p2Body.position[1]],
+                    angle: p.p2Body.angle,
                 }
             });
         }
 
         const positions = createPositionsArray(world.players);
         io.emit(ioMsg.players, positions)
+    }
+
+    notifyPlayerWasHit(player) {
+        player.socket.emit(ioMsg.spawn, player.p2Body.position);
+
+        io.emit(ioMsg.playerWasHit, {
+            id: player.id,
+            damage: undefined
+        })
     }
 
     update() {

@@ -66,8 +66,8 @@ class Renderer {
         };
 
         const newTranslateVector = {
-            x: p5.lerp(translateVector.x, screenSize.x / 2 - player.person.position[0] + cameraOffset.x, CAMERA_LERP),
-            y: p5.lerp(translateVector.y, screenSize.y / 2 - player.person.position[1] + cameraOffset.y, CAMERA_LERP)
+            x: p5.lerp(translateVector.x, screenSize.x / 2 - player.p2Body.position[0] + cameraOffset.x, CAMERA_LERP),
+            y: p5.lerp(translateVector.y, screenSize.y / 2 - player.p2Body.position[1] + cameraOffset.y, CAMERA_LERP)
         };
 
         Renderer.translateVector = translateVector = {
@@ -167,8 +167,8 @@ class Renderer {
             return;
 
         const playerPosition = {
-            x: player.person.position[0],
-            y: player.person.position[1]
+            x: player.p2Body.position[0],
+            y: player.p2Body.position[1]
         };
         const res = sal.compute(playerPosition, walls);
 

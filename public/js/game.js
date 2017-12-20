@@ -63,6 +63,8 @@ class Game {
 
         socket.on(ioMsg.addBullet, this.addBullet);
         socket.on(ioMsg.removeBullet, this.removeBullet);
+
+        socket.on(ioMsg.playerWasHit, this.handlePlayerHit);
     }
 
     setWorldSize(data) {
@@ -119,8 +121,8 @@ class Game {
                 if (p.angle === undefined)
                     return;
 
-                enemies[i].person.position = p.position;
-                enemies[i].person.angle = p.angle;
+                enemies[i].p2Body.position = p.position;
+                enemies[i].p2Body.angle = p.angle;
                 return;
             }
 
@@ -180,6 +182,11 @@ class Game {
         function isBullet(body) {
             return bullets.some(bullet => body === bullet.body);
         }
+    }
+
+    handlePlayerHit(data) {
+
+        console.log(data);
     }
 
 

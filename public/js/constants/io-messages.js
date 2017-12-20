@@ -5,6 +5,7 @@ module.exports = {
 	playerConnected 	: 'player connected',
 	playerDisconnected	: 'player disconnected',
 	spawn           	: 'spawn',
+    playerWasHit		: 'player was hit',
 
     addBullet			: 'add bullet',
 	removeBullet		: 'remove bullet',
